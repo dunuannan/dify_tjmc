@@ -1,0 +1,1108 @@
+app:
+  description: Dify + OCR 两阶段版企业捐赠资料审核工作流。先提取文本并生成各文档摘要，再基于摘要生成最终审核报告，以降低长上下文导致的失败概率。
+  icon: 📋
+  icon_background: '#D9F3E9'
+  icon_type: emoji
+  mode: workflow
+  name: donate_review_ocr
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: package
+  value:
+    plugin_unique_identifier: langgenius/deepseek:0.0.12@37699cc3d1ea9e006348a7273a514f3ddf60ffb0649dc735c594c8da6a80934b
+    version: null
+- current_identifier: null
+  type: package
+  value:
+    plugin_unique_identifier: langgenius/mineru:0.5.2@c9365b860826ac4650b3d07d1feadf2506fb5d354aba2fb6a0ca4149fc20b088
+    version: null
+- current_identifier: null
+  type: package
+  value:
+    plugin_unique_identifier: bowenliang123/md_exporter:3.6.9@3f027d63e80b44d5d5a9f706871afaef37905b8f8a89a2d152dc530211a8acb1
+    version: null
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        attachment_image_file_size_limit: 2
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        file_upload_limit: 20
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: false
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        sourceType: start
+        targetType: document-extractor
+      id: start_node-source-agreement_extractor-target
+      source: start_node
+      sourceHandle: source
+      target: agreement_extractor
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: document-extractor
+        targetType: llm
+      id: agreement_extractor-source-agreement_summary-target
+      source: agreement_extractor
+      sourceHandle: source
+      target: agreement_summary
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: document-extractor
+      id: agreement_summary-source-asset_detail_extractor-target
+      source: agreement_summary
+      sourceHandle: source
+      target: asset_detail_extractor
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: document-extractor
+        targetType: llm
+      id: asset_detail_extractor-source-asset_detail_summary-target
+      source: asset_detail_extractor
+      sourceHandle: source
+      target: asset_detail_summary
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: tool
+      id: asset_detail_summary-source-appraisal_ocr-target
+      source: asset_detail_summary
+      sourceHandle: source
+      target: appraisal_ocr
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: tool
+        targetType: llm
+      id: appraisal_ocr-source-appraisal_summary-target
+      source: appraisal_ocr
+      sourceHandle: source
+      target: appraisal_summary
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: if-else
+      id: appraisal_summary-source-legal_opinion_check-target
+      source: appraisal_summary
+      sourceHandle: source
+      target: legal_opinion_check
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: if-else
+        targetType: tool
+      id: legal_opinion_check-true-legal_opinion_ocr-target
+      source: legal_opinion_check
+      sourceHandle: 'true'
+      target: legal_opinion_ocr
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: if-else
+        targetType: template-transform
+      id: legal_opinion_check-false-legal_opinion_missing-target
+      source: legal_opinion_check
+      sourceHandle: 'false'
+      target: legal_opinion_missing
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: tool
+        targetType: variable-aggregator
+      id: legal_opinion_ocr-source-legal_opinion_aggregator-target
+      source: legal_opinion_ocr
+      sourceHandle: source
+      target: legal_opinion_aggregator
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: template-transform
+        targetType: variable-aggregator
+      id: legal_opinion_missing-source-legal_opinion_aggregator-target
+      source: legal_opinion_missing
+      sourceHandle: source
+      target: legal_opinion_aggregator
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: variable-aggregator
+        targetType: llm
+      id: legal_opinion_aggregator-source-legal_opinion_summary-target
+      source: legal_opinion_aggregator
+      sourceHandle: source
+      target: legal_opinion_summary
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: template-transform
+      id: legal_opinion_summary-source-review_package-target
+      source: legal_opinion_summary
+      sourceHandle: source
+      target: review_package
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: template-transform
+        targetType: llm
+      id: review_package-source-review_llm-target
+      source: review_package
+      sourceHandle: source
+      target: review_llm
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: template-transform
+      id: review_llm-source-export_filename_builder-target
+      source: review_llm
+      sourceHandle: source
+      target: export_filename_builder
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: template-transform
+        targetType: tool
+      id: export_filename_builder-source-markdown_exporter-target
+      source: export_filename_builder
+      sourceHandle: source
+      target: markdown_exporter
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: tool
+        targetType: end
+      id: markdown_exporter-source-review_output-target
+      source: markdown_exporter
+      sourceHandle: source
+      target: review_output
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: ''
+        selected: false
+        title: 开始
+        type: start
+        variables:
+        - label: 资料包名称或编号（可选）
+          max_length: 128
+          options: []
+          required: false
+          type: text-input
+          variable: package_name
+        - label: 项目类型（不确定可选“未说明”）
+          max_length: 48
+          options:
+          - 双高计划
+          - 开放型产教融合实践中心
+          - 未说明
+          required: true
+          type: select
+          variable: project_type
+        - allowed_file_extensions:
+          - .doc
+          - .docx
+          - .pdf
+          allowed_file_types:
+          - document
+          allowed_file_upload_methods:
+          - local_file
+          - remote_url
+          label: 捐赠协议文件
+          max_length: 48
+          options: []
+          required: true
+          type: file
+          variable: agreement_file
+        - allowed_file_extensions:
+          - .xls
+          - .xlsx
+          - .csv
+          - .pdf
+          allowed_file_types:
+          - document
+          allowed_file_upload_methods:
+          - local_file
+          - remote_url
+          label: 捐赠资产明细表文件
+          max_length: 48
+          options: []
+          required: true
+          type: file
+          variable: asset_detail_file
+        - allowed_file_extensions:
+          - .pdf
+          - .doc
+          - .docx
+          allowed_file_types:
+          - document
+          allowed_file_upload_methods:
+          - local_file
+          - remote_url
+          label: 资产评估报告文件（MinerU OCR）
+          max_length: 48
+          options: []
+          required: true
+          type: file
+          variable: appraisal_report_file
+        - allowed_file_extensions:
+          - .pdf
+          - .doc
+          - .docx
+          allowed_file_types:
+          - document
+          allowed_file_upload_methods:
+          - local_file
+          - remote_url
+          label: 法律意见书文件（可选，MinerU OCR）
+          max_length: 48
+          options: []
+          required: false
+          type: file
+          variable: legal_opinion_file
+        - label: 补充说明（OCR不清、页码缺失、人工备注等）
+          max_length: 8000
+          options: []
+          required: false
+          type: paragraph
+          variable: reviewer_notes
+      height: 264
+      id: start_node
+      position:
+        x: 60
+        y: 290
+      positionAbsolute:
+        x: 60
+        y: 290
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: not empty
+            id: legal-opinion-file-not-empty
+            value: ''
+            varType: file
+            variable_selector:
+            - start_node
+            - legal_opinion_file
+          id: 'true'
+          logical_operator: and
+        desc: ''
+        selected: false
+        title: 是否上传法律意见书
+        type: if-else
+      height: 139
+      id: legal_opinion_check
+      position:
+        x: 700
+        y: 460
+      positionAbsolute:
+        x: 700
+        y: 460
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        is_array_file: false
+        selected: false
+        title: 提取协议文本
+        type: document-extractor
+        variable_selector:
+        - start_node
+        - agreement_file
+      height: 104
+      id: agreement_extractor
+      position:
+        x: 380
+        y: 40
+      positionAbsolute:
+        x: 380
+        y: 40
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            max_tokens: 900
+            temperature: 0.1
+            top_p: 1
+          mode: chat
+          name: deepseek-coder
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - id: agreement-summary-system
+          role: system
+          text: '你是捐赠协议信息提炼助手。请仅根据输入文本提炼协议关键信息，压缩成短摘要，避免全文复述。
+
+
+            输出要求：
+
+            1. 使用中文 Markdown。
+
+            2. 只保留审核必须信息，控制在 600 字以内。
+
+            3. 对缺失或不确定内容写“未见明确证据”或“需人工复核”。
+
+            4. 按以下标题输出：
+
+
+            ## 协议摘要
+
+            - 捐赠方：
+
+            - 受赠方：
+
+            - 项目类型：
+
+            - 协议金额：
+
+            - 资产概况：
+
+            - 甲乙方关键信息完整性：
+
+            - 核心条款完整性：
+
+            - 评估报告引用情况：
+
+            - 使用年限表述：
+
+            - 第4.1.1项目名称表述：
+
+            - 资产管理/维护/监督/单独核算条款：
+
+            - 签署页情况：
+
+            - 主要风险点：'
+        - id: agreement-summary-user
+          role: user
+          text: '{{#agreement_extractor.text#}}'
+        selected: false
+        title: 提炼协议要点
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 87
+      id: agreement_summary
+      position:
+        x: 700
+        y: 40
+      positionAbsolute:
+        x: 700
+        y: 40
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        is_array_file: false
+        selected: false
+        title: 提取明细表文本
+        type: document-extractor
+        variable_selector:
+        - start_node
+        - asset_detail_file
+      height: 104
+      id: asset_detail_extractor
+      position:
+        x: 380
+        y: 180
+      positionAbsolute:
+        x: 380
+        y: 180
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            max_tokens: 900
+            temperature: 0.1
+            top_p: 1
+          mode: chat
+          name: deepseek-coder
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - id: asset-summary-system
+          role: system
+          text: '你是捐赠资产明细表信息提炼助手。请从输入文本中提炼审核所需的表格要点，不要复述全文。
+
+
+            输出要求：
+
+            1. 使用中文 Markdown。
+
+            2. 控制在 700 字以内。
+
+            3. 明确指出无法识别、缺列、合计异常和与协议可能冲突的地方。
+
+            4. 按以下标题输出：
+
+
+            ## 明细表摘要
+
+            - 关键列完整性：
+
+            - 资产条目概况：
+
+            - 合计数量：
+
+            - 原值合计：
+
+            - 评估值合计：
+
+            - 与协议可能存在的不一致：
+
+            - 主要风险点：'
+        - id: asset-summary-user
+          role: user
+          text: '{{#asset_detail_extractor.text#}}'
+        selected: false
+        title: 提炼明细表要点
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 87
+      id: asset_detail_summary
+      position:
+        x: 700
+        y: 193.35695761624459
+      positionAbsolute:
+        x: 700
+        y: 193.35695761624459
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        is_team_authorization: true
+        params:
+          file: ''
+          parse_method: ''
+        provider_id: langgenius/mineru/mineru
+        provider_name: langgenius/mineru/mineru
+        provider_type: builtin
+        selected: false
+        title: MinerU OCR评估报告
+        tool_configurations:
+          parse_method:
+            type: constant
+            value: ocr
+          tool_label:
+            type: constant
+            value: Parse PDF
+        tool_label: Parse PDF
+        tool_name: parse-file
+        tool_node_version: '2'
+        tool_parameters:
+          file:
+            type: variable
+            value:
+            - start_node
+            - appraisal_report_file
+          parse_method:
+            type: mixed
+            value: ocr
+        type: tool
+      height: 113
+      id: appraisal_ocr
+      position:
+        x: 380
+        y: 320
+      positionAbsolute:
+        x: 380
+        y: 320
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            max_tokens: 900
+            temperature: 0.1
+            top_p: 1
+          mode: chat
+          name: deepseek-coder
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - id: appraisal-summary-system
+          role: system
+          text: '你是资产评估报告信息提炼助手。输入可能来自 OCR，请只保留审核必须信息，不要复述全文。
+
+
+            输出要求：
+
+            1. 使用中文 Markdown。
+
+            2. 控制在 700 字以内。
+
+            3. 对 OCR 模糊处写“需人工复核”。
+
+            4. 按以下标题输出：
+
+
+            ## 评估报告摘要
+
+            - 报告名称：
+
+            - 评估机构：
+
+            - 报告编号：
+
+            - 报告日期：
+
+            - 评估方法：
+
+            - 评估结论金额：
+
+            - 盖章签字情况：
+
+            - OCR 可读性：
+
+            - 主要风险点：'
+        - id: appraisal-summary-user
+          role: user
+          text: '{{#appraisal_ocr.text#}}'
+        selected: false
+        title: 提炼评估报告要点
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 87
+      id: appraisal_summary
+      position:
+        x: 700
+        y: 320
+      positionAbsolute:
+        x: 700
+        y: 320
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        is_team_authorization: true
+        params:
+          file: ''
+          parse_method: ''
+        provider_id: langgenius/mineru/mineru
+        provider_name: langgenius/mineru/mineru
+        provider_type: builtin
+        selected: false
+        title: MinerU OCR法律意见书
+        tool_configurations:
+          parse_method:
+            type: constant
+            value: ocr
+          tool_label:
+            type: constant
+            value: Parse PDF
+        tool_label: Parse PDF
+        tool_name: parse-file
+        tool_node_version: '2'
+        tool_parameters:
+          file:
+            type: variable
+            value:
+            - start_node
+            - legal_opinion_file
+          parse_method:
+            type: mixed
+            value: ocr
+        type: tool
+      height: 113
+      id: legal_opinion_ocr
+      position:
+        x: 1020
+        y: 350
+      positionAbsolute:
+        x: 1020
+        y: 350
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        selected: false
+        template: 未提供法律意见书文件
+        title: 法律意见书缺失说明
+        type: template-transform
+        variables: []
+      height: 51
+      id: legal_opinion_missing
+      position:
+        x: 1020
+        y: 570
+      positionAbsolute:
+        x: 1020
+        y: 570
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        output_type: string
+        selected: false
+        title: 聚合法律意见书文本
+        type: variable-aggregator
+        variables:
+        - - legal_opinion_ocr
+          - text
+        - - legal_opinion_missing
+          - output
+      height: 134
+      id: legal_opinion_aggregator
+      position:
+        x: 1340
+        y: 460
+      positionAbsolute:
+        x: 1340
+        y: 460
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            max_tokens: 700
+            temperature: 0.1
+            top_p: 1
+          mode: chat
+          name: deepseek-coder
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - id: legal-summary-system
+          role: system
+          text: '你是法律意见书信息提炼助手。输入可能是 OCR 文本，也可能只是“未提供法律意见书文件”的占位说明。
+
+
+            输出要求：
+
+            1. 使用中文 Markdown。
+
+            2. 控制在 500 字以内。
+
+            3. 若未提供文件，直接说明“文件缺失”及其审核影响。
+
+            4. 按以下标题输出：
+
+
+            ## 法律意见书摘要
+
+            - 文件状态：
+
+            - 出具单位：
+
+            - 审查范围：
+
+            - 主体资格结论：
+
+            - 权属/合法性结论：
+
+            - 协议效力结论：
+
+            - 缺失或风险点：'
+        - id: legal-summary-user
+          role: user
+          text: '{{#legal_opinion_aggregator.output#}}'
+        selected: false
+        title: 提炼法律意见书要点
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 87
+      id: legal_opinion_summary
+      position:
+        x: 1660
+        y: 460
+      positionAbsolute:
+        x: 1660
+        y: 460
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        selected: false
+        template: '审核任务：天津海运职业学院企业捐赠资料审核
+
+
+          说明：
+
+          1. 这是两阶段审核工作流，以下内容均为前置节点提炼后的摘要，不是全文。
+
+          2. 如摘要中标注“需人工复核”或“未见明确证据”，最终报告必须保留这种不确定性。
+
+          3. 不得凭空补齐缺失字段。
+
+
+          资料包名称：{% if package_name %}{{ package_name }}{% else %}未填写{% endif %}
+
+          用户选择的项目类型：{{ project_type }}
+
+          补充说明：{% if reviewer_notes %}{{ reviewer_notes }}{% else %}无{% endif %}
+
+
+          【捐赠协议摘要】
+
+          {{ agreement_summary }}
+
+
+          【捐赠资产明细表摘要】
+
+          {{ asset_detail_summary }}
+
+
+          【资产评估报告摘要】
+
+          {{ appraisal_summary }}
+
+
+          【法律意见书摘要】
+
+          {{ legal_opinion_summary }}'
+        title: 组装审核资料
+        type: template-transform
+        variables:
+        - value_selector:
+          - start_node
+          - package_name
+          variable: package_name
+        - value_selector:
+          - start_node
+          - project_type
+          variable: project_type
+        - value_selector:
+          - agreement_summary
+          - text
+          variable: agreement_summary
+        - value_selector:
+          - asset_detail_summary
+          - text
+          variable: asset_detail_summary
+        - value_selector:
+          - appraisal_summary
+          - text
+          variable: appraisal_summary
+        - value_selector:
+          - legal_opinion_summary
+          - text
+          variable: legal_opinion_summary
+        - value_selector:
+          - start_node
+          - reviewer_notes
+          variable: reviewer_notes
+      height: 51
+      id: review_package
+      position:
+        x: 1660
+        y: 632.4179127365417
+      positionAbsolute:
+        x: 1660
+        y: 632.4179127365417
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            max_tokens: 1800
+            temperature: 0.2
+            top_p: 1
+          mode: chat
+          name: deepseek-coder
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - id: donate-review-system
+          role: system
+          text: "你是“天津海运职业学院企业捐赠资料审核助手”，负责根据前置节点提炼出的文档摘要，输出一份尽量贴近项目目录内 `审核报告.md` 风格的正式\
+            \ Markdown 审核报告。\n\n工作原则：\n1. 只能根据输入摘要作答，不得补造事实。\n2. 若摘要中写明“未见明确证据”“需人工复核”“OCR\
+            \ 不清”，最终报告必须保留这一结论。\n3. 你要做的是综合审查，不要重复大段摘要原文。\n4. 文风要接近样例报告：简洁、审慎、偏书面、公文式，不要写成聊天回复。\n\
+            \n受赠方固定标准信息：\n- 单位全称：天津海运职业学院\n- 统一社会信用代码：12120000789369031W\n- 地址：天津市津南区雅深路8号\n\
+            - 法定代表人：于忠武\n\n审核要点：\n- 核对是否包含：捐赠协议、捐赠资产明细表、资产评估报告、法律意见书。\n- 若法律意见书缺失：\n\
+            \  - 双高计划：按严重缺件处理，结论至少为“不通过”。\n  - 开放型产教融合实践中心：至少认定为“资料不完整”；若同时存在其他严重问题，则结论为“不通过”；若其他项目均基本正常，可给“有条件通过”，但必须明确要求补充法律意见书。\n\
+            - 检查甲乙双方名称、统一社会信用代码、地址、法定代表人、联系方式是否齐全。\n- 检查乙方固定信息是否与标准一致。\n- 检查是否明确写明项目类型为“双高计划”或“开放型产教融合实践中心”。\n\
+            - 检查协议第一条是否明确引用评估报告的完整名称和文号；若未引用，应认定为重要缺陷。\n- 检查使用年限表述是否为“以评估报告为准”或同等表述；若仍写固定年数（如“5年”），应指出不符合终版规则。\n\
+            - 重点检查第 4.1.1 条款是否出现“项目名称笔误”，尤其是把“开放型产教融合实践中心”误写成“双高计划”。\n- 检查终版新增/强化的管理条款是否出现：资产管理制度、定期维护保养、信息反馈机制、接受监督检查、单独核算。\n\
+            - 至少核对：捐赠方名称、受赠方名称、项目类型、资产名称、资产数量、协议金额、明细表评估值合计、评估报告结论金额。\n- 下列任一情况，最终结论应为“不通过”：\n\
+            \  - 协议金额与明细表评估值合计明显不一致\n  - 协议金额与评估报告结论金额明显不一致\n  - 甲乙双方关键信息缺失或错误\n \
+            \ - 捐赠用途与项目类型明显错误\n  - 缺少核心条款导致协议实质不完整\n  - 双高计划缺少法律意见书\n  - 协议第一条未引用评估报告名称和文号\n\
+            \  - 使用年限仍写固定年数而非“以评估报告为准”\n  - 资产权属或合法性无法成立\n\n输出格式要求：\n- 必须输出为 Markdown。\n\
+            - 版式尽量贴近项目中的 `审核报告.md`，优先采用下面这套结构。\n- 如果某项信息无法确认，写“⚠️ 待人工核验”“未见明确证据”或“需人工复核”，不要省略该项。\n\
+            - 表格中的状态尽量使用：✅ / ⚠️ / ❌。\n- 若存在严重问题，在对应小节标题或正文中可使用“\U0001F534 严重问题”强调。\n\
+            \n请严格按以下结构输出：\n\n# 审核报告：<资料包名称或编号>\n\n**审核日期**：如输入未提供具体日期，可写“本次审核”\n**审核依据**：依据当前工作流内置审核标准及项目资料审核清单\n\
+            **捐赠方**：\n**受赠方**：天津海运职业学院\n**捐赠项目**：\n**协议金额**：\n**捐赠资产**：\n\n---\n\n\
+            ## 一、资料完整性\n\n- 先输出一个 4 列表格：`序号 | 文件 | 状态 | 说明`\n- 文件至少包含：捐赠协议、捐赠资产明细表、资产评估报告、法律意见书\n\
+            - 表格下方单独写一行：`**结论：...**`\n\n---\n\n## 二、捐赠协议审核\n\n### 2.1 首部信息\n- 用表格输出：`信息项\
+            \ | 甲方 | 乙方 | 结果`\n\n### 2.2 八条必备条款\n- 用表格输出：`条款 | 状态 | 备注`\n- 如果无法确认全部八条，可保守写“需人工复核”\n\
+            - 在备注中额外指出：是否引用评估报告、使用年限表述是否为“以评估报告为准”、第4.1.1项目名称是否正确、终版管理条款是否完整\n\n###\
+            \ 2.3 签署页\n- 用 3 到 5 条项目符号列出签署页情况\n\n### 2.4 金额校验\n- 用表格输出：`校验项 | 值 |\
+            \ 结果`\n\n### 2.5 发现的问题\n- 如果问题很多，可先单列“\U0001F534 严重问题”小节，再列问题表\n- 问题表格式：`#\
+            \ | 严重程度 | 问题 | 位置`\n- 如发现“评估报告未引用”“使用年限写固定年数”“4.1.1 项目名称笔误”“缺少资产管理/维护/监督/单独核算条款”，必须明确列出\n\
+            \n---\n\n## 三、捐赠资产明细表审核\n\n### 3.1 结构检查\n- 用项目符号列出结构检查结果\n\n### 3.2 数据内容\n\
+            - 用表格列出关键资产条目和合计\n\n### 3.3 交叉校验\n- 用表格输出：`项目 | 协议 | 明细表 | 一致性`\n\n---\n\
+            \n## 四、资产评估报告审核\n\n- 用表格输出：`检查项 | 结果 | 说明`\n- 若 OCR 无法确认金额或编号，明确写“⚠️ 待人工核验”\n\
+            \n---\n\n## 五、综合审核结论\n\n- 先输出一个表格：`审核维度 | 结果`\n- 然后输出：\n  - `### 最终结论：**...**`\n\
+            \  - `### 必须整改项`\n  - `### 建议修正项`\n- “必须整改项”用编号列表，只放影响通过与否的问题\n- “建议修正项”用编号列表，只放文字规范、格式细节、补证、人工核验等问题\n\
+            \n额外要求：\n- 尽量让整份报告长得像项目目录中的 `.md` 审核报告，而不是通用 AI 总结。\n- 如果信息不足，不要硬凑章节内容，但标题结构仍要保留。"
+        - id: donate-review-user
+          role: user
+          text: '{{#review_package.output#}}'
+        selected: false
+        title: 生成审核报告
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 87
+      id: review_llm
+      position:
+        x: 1660
+        y: 762.425224057579
+      positionAbsolute:
+        x: 1660
+        y: 762.425224057579
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        selected: false
+        template: '{% if package_name %}{{ package_name }}-审核报告{% else %}审核报告{% endif
+          %}'
+        title: 生成导出文件名
+        type: template-transform
+        variables:
+        - value_selector:
+          - start_node
+          - package_name
+          variable: package_name
+      height: 51
+      id: export_filename_builder
+      position:
+        x: 1840
+        y: 762.425224057579
+      positionAbsolute:
+        x: 1840
+        y: 762.425224057579
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        params:
+          md_content: ''
+          output_filename: ''
+        provider_id: bowenliang123/md_exporter/md_exporter
+        provider_name: bowenliang123/md_exporter/md_exporter
+        provider_type: builtin
+        selected: true
+        title: 导出Markdown文件
+        tool_configurations: {}
+        tool_label: Markdown To Markdown
+        tool_name: md_to_md
+        tool_node_version: '2'
+        tool_parameters:
+          md_content:
+            type: variable
+            value:
+            - review_llm
+            - text
+          md_text:
+            type: mixed
+            value: '{{#review_llm.text#}}'
+          output_filename:
+            type: variable
+            value:
+            - export_filename_builder
+            - output
+        type: tool
+      height: 51
+      id: markdown_exporter
+      position:
+        x: 2200
+        y: 762.425224057579
+      positionAbsolute:
+        x: 2200
+        y: 762.425224057579
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - review_llm
+          - text
+          variable: audit_report
+        - value_selector:
+          - markdown_exporter
+          - files
+          variable: audit_report_md_file
+        selected: false
+        title: 输出审核报告
+        type: end
+      height: 114
+      id: review_output
+      position:
+        x: 2560
+        y: 762.425224057579
+      positionAbsolute:
+        x: 2560
+        y: 762.425224057579
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    viewport:
+      x: 49.607161719110195
+      y: 62.79185417155401
+      zoom: 0.4385753954023144
+  rag_pipeline_variables: []

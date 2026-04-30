@@ -1,0 +1,590 @@
+app:
+  description: 纯 Dify 版企业捐赠资料审核工作流。用户在开始节点上传捐赠协议、资产明细表、资产评估报告、法律意见书文件，工作流使用文档提取器解析内容后生成审核报告。
+  icon: 📋
+  icon_background: '#D9F3E9'
+  icon_type: emoji
+  mode: workflow
+  name: donate_review
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/openai_api_compatible:0.0.41@680b9357e6cd290ef5e8691a35286bffddb75bf30c8dacfe351d8b5e5fd87283
+    version: null
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        attachment_image_file_size_limit: 2
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        file_upload_limit: 20
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: false
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        sourceType: start
+        targetType: document-extractor
+      id: start_node-source-agreement_extractor-target
+      source: start_node
+      sourceHandle: source
+      target: agreement_extractor
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: document-extractor
+        targetType: document-extractor
+      id: agreement_extractor-source-asset_detail_extractor-target
+      source: agreement_extractor
+      sourceHandle: source
+      target: asset_detail_extractor
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: document-extractor
+        targetType: document-extractor
+      id: asset_detail_extractor-source-appraisal_extractor-target
+      source: asset_detail_extractor
+      sourceHandle: source
+      target: appraisal_extractor
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: document-extractor
+        targetType: document-extractor
+      id: appraisal_extractor-source-legal_opinion_extractor-target
+      source: appraisal_extractor
+      sourceHandle: source
+      target: legal_opinion_extractor
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: document-extractor
+        targetType: template-transform
+      id: legal_opinion_extractor-source-review_package-target
+      source: legal_opinion_extractor
+      sourceHandle: source
+      target: review_package
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: template-transform
+        targetType: llm
+      id: review_package-source-review_llm-target
+      source: review_package
+      sourceHandle: source
+      target: review_llm
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: end
+      id: review_llm-source-review_output-target
+      source: review_llm
+      sourceHandle: source
+      target: review_output
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: ''
+        selected: false
+        title: 开始
+        type: start
+        variables:
+        - label: 资料包名称或编号（可选）
+          max_length: 128
+          options: []
+          required: false
+          type: text-input
+          variable: package_name
+        - label: 项目类型（不确定可选“未说明”）
+          max_length: 48
+          options:
+          - 双高计划
+          - 开放型产教融合实践中心
+          - 未说明
+          required: true
+          type: select
+          variable: project_type
+        - allowed_file_extensions:
+          - .doc
+          - .docx
+          - .pdf
+          - .txt
+          allowed_file_types:
+          - document
+          allowed_file_upload_methods:
+          - local_file
+          - remote_url
+          label: 捐赠协议文件
+          max_length: 48
+          options: []
+          required: true
+          type: file
+          variable: agreement_file
+        - allowed_file_extensions:
+          - .xls
+          - .xlsx
+          - .csv
+          - .pdf
+          allowed_file_types:
+          - document
+          allowed_file_upload_methods:
+          - local_file
+          - remote_url
+          label: 捐赠资产明细表文件
+          max_length: 48
+          options: []
+          required: true
+          type: file
+          variable: asset_detail_file
+        - allowed_file_extensions:
+          - .pdf
+          - .doc
+          - .docx
+          - .txt
+          allowed_file_types:
+          - document
+          allowed_file_upload_methods:
+          - local_file
+          - remote_url
+          label: 资产评估报告文件
+          max_length: 48
+          options: []
+          required: true
+          type: file
+          variable: appraisal_report_file
+        - allowed_file_extensions:
+          - .pdf
+          - .doc
+          - .docx
+          - .txt
+          allowed_file_types:
+          - document
+          allowed_file_upload_methods:
+          - local_file
+          - remote_url
+          label: 法律意见书文件
+          max_length: 48
+          options: []
+          required: true
+          type: file
+          variable: legal_opinion_file
+        - label: 补充说明（OCR不清、页码缺失、人工备注等）
+          max_length: 8000
+          options: []
+          required: false
+          type: paragraph
+          variable: reviewer_notes
+      height: 272
+      id: start_node
+      position:
+        x: 60
+        y: 290
+      positionAbsolute:
+        x: 60
+        y: 290
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        is_array_file: false
+        selected: false
+        title: 提取协议文本
+        type: document-extractor
+        variable_selector:
+        - start_node
+        - agreement_file
+      height: 94
+      id: agreement_extractor
+      position:
+        x: 380
+        y: 40
+      positionAbsolute:
+        x: 380
+        y: 40
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        is_array_file: false
+        selected: false
+        title: 提取明细表文本
+        type: document-extractor
+        variable_selector:
+        - start_node
+        - asset_detail_file
+      height: 94
+      id: asset_detail_extractor
+      position:
+        x: 380
+        y: 180
+      positionAbsolute:
+        x: 380
+        y: 180
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        is_array_file: false
+        selected: false
+        title: 提取评估报告文本
+        type: document-extractor
+        variable_selector:
+        - start_node
+        - appraisal_report_file
+      height: 94
+      id: appraisal_extractor
+      position:
+        x: 380
+        y: 320
+      positionAbsolute:
+        x: 380
+        y: 320
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        is_array_file: false
+        selected: false
+        title: 提取法律意见书文本
+        type: document-extractor
+        variable_selector:
+        - start_node
+        - legal_opinion_file
+      height: 94
+      id: legal_opinion_extractor
+      position:
+        x: 380
+        y: 460
+      positionAbsolute:
+        x: 380
+        y: 460
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        selected: false
+        template: |-
+          审核任务：天津海运职业学院企业捐赠资料审核
+
+          说明：
+          1. 这是纯 Dify 工作流，没有外部解析服务。
+          2. 下列文本来自 Dify 文档提取器，可能因 OCR、扫描质量、旧版 Office 文件或表格结构导致信息缺失。
+          3. 如果某项文本缺失、乱码、证据不足，请在审核报告中明确写“需人工复核”，不要自行编造。
+
+          资料包名称：{% if package_name %}{{ package_name }}{% else %}未填写{% endif %}
+          用户选择的项目类型：{{ project_type }}
+          补充说明：{% if reviewer_notes %}{{ reviewer_notes }}{% else %}无{% endif %}
+
+          【捐赠协议文本】
+          {{ agreement_text }}
+
+          【捐赠资产明细表文本】
+          {{ asset_detail_text }}
+
+          【资产评估报告文本】
+          {{ appraisal_report_text }}
+
+          【法律意见书文本】
+          {{ legal_opinion_text }}
+        title: 组装审核资料
+        type: template-transform
+        variables:
+        - value_selector:
+          - start_node
+          - package_name
+          variable: package_name
+        - value_selector:
+          - start_node
+          - project_type
+          variable: project_type
+        - value_selector:
+          - agreement_extractor
+          - text
+          variable: agreement_text
+        - value_selector:
+          - asset_detail_extractor
+          - text
+          variable: asset_detail_text
+        - value_selector:
+          - appraisal_extractor
+          - text
+          variable: appraisal_report_text
+        - value_selector:
+          - legal_opinion_extractor
+          - text
+          variable: legal_opinion_text
+        - value_selector:
+          - start_node
+          - reviewer_notes
+          variable: reviewer_notes
+      height: 53
+      id: review_package
+      position:
+        x: 700
+        y: 260
+      positionAbsolute:
+        x: 700
+        y: 260
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            frequency_penalty: 0
+            max_tokens: 2500
+            presence_penalty: 0
+            temperature: 0.2
+            top_p: 1
+          mode: chat
+          name: gemma-4-e4b-it
+          provider: langgenius/openai_api_compatible/openai_api_compatible
+        prompt_template:
+        - id: donate-review-system
+          role: system
+          text: |-
+            你是“天津海运职业学院企业捐赠资料审核助手”，负责根据用户提供的文档文本出具正式、审慎、可执行的审核报告。
+
+            你的工作目标：
+            1. 从文档文本中抽取关键信息。
+            2. 依据审核标准检查资料完整性、条款完整性、数据一致性和法律合规性。
+            3. 输出一份结构清晰的中文审核报告。
+
+            受赠方固定标准信息：
+            - 单位全称：天津海运职业学院
+            - 统一社会信用代码：12120000789369031W
+            - 地址：天津市津南区雅深路8号
+            - 法定代表人：于忠武
+
+            你必须重点检查以下内容：
+
+            一、资料完整性
+            - 核对是否包含：捐赠协议、捐赠资产明细表、资产评估报告、法律意见书。
+            - 若法律意见书缺失：
+              - 双高计划：按严重缺件处理，结论至少为“不通过”。
+              - 开放型产教融合实践中心：至少认定为“资料不完整”；若同时存在其他严重问题，则结论为“不通过”；若其他项目均基本正常，可给“有条件通过”，但必须明确要求补充法律意见书。
+
+            二、捐赠协议审核
+            - 检查甲乙双方名称、统一社会信用代码、地址、法定代表人、联系方式是否齐全。
+            - 检查乙方固定信息是否与标准一致。
+            - 检查是否明确写明项目类型为“双高计划”或“开放型产教融合实践中心”。
+            - 检查是否明确为非现金捐赠。
+            - 检查是否有资产数量、金额小写、金额大写、资产状态、使用年限、权属声明。
+            - 检查是否覆盖以下八类核心内容：
+              1. 捐赠资产概况
+              2. 交付与验收
+              3. 产权归属与使用要求
+              4. 双方的权利与义务
+              5. 违约责任
+              6. 协议的变更与解除
+              7. 争议解决方式
+              8. 其他与签署生效安排
+            - 检查签署页是否完整，是否出现“以下无正文”“此页无正文”等表述，甲乙方签署栏是否完整。
+
+            三、资产明细表审核
+            - 检查是否包含常见关键列：序号、资产名称、资产大类、资产小类、型号规格、数量、原值单价、原值总价、评估值。
+            - 检查合计数量、原值合计、评估值合计是否清楚。
+            - 检查资产名称、数量、金额是否与协议一致。
+
+            四、资产评估报告审核
+            - 检查报告名称、评估机构、报告编号、报告日期、评估方法、评估结论金额、盖章签字信息是否可识别。
+            - 若扫描/OCR 不清楚，必须写“需人工复核”，不能臆造金额或结论。
+            - 评估结论金额应与协议金额、明细表评估值合计一致。
+
+            五、法律意见书审核
+            - 检查是否明确出具单位、审查范围、主体资格结论、资产权属结论、程序合规结论、协议效力结论、总体意见。
+            - 若只给出模糊意见、缺章或缺签，也要指出。
+
+            六、交叉一致性校验
+            - 至少核对：捐赠方名称、受赠方名称、项目类型、资产名称、资产数量、协议金额、明细表评估值合计、评估报告结论金额。
+
+            七、严重问题判定
+            只要出现以下任一情况，最终结论应为“不通过”：
+            - 协议金额与明细表评估值合计明显不一致
+            - 协议金额与评估报告结论金额明显不一致
+            - 甲乙双方关键信息缺失或错误
+            - 捐赠用途与项目类型明显错误
+            - 缺少核心条款导致协议实质不完整
+            - 双高计划缺少法律意见书
+            - 资产权属或合法性无法成立
+
+            八、输出要求
+            - 只能根据输入文本作答，不得编造未出现的信息。
+            - 对不确定信息，写“未见明确证据”或“需人工复核”。
+            - 使用正式、审慎、专业的中文。
+            - 输出必须严格使用下面的 Markdown 结构和标题顺序：
+
+            # 审核报告
+
+            **资料包名称**：
+            **审核结论**：通过 / 有条件通过 / 不通过
+            **项目类型**：
+            **捐赠方**：
+            **受赠方**：
+            **协议金额**：
+            **资产概况**：
+
+            ## 一、资料完整性
+            用表格列出各文件、状态、说明，并给出本节结论。
+
+            ## 二、捐赠协议审核
+            至少包含：
+            - 2.1 首部信息
+            - 2.2 核心条款完整性
+            - 2.3 签署页
+            - 2.4 金额与关键数字校验
+            - 2.5 发现的问题
+
+            ## 三、捐赠资产明细表审核
+            至少包含结构检查、数据内容、交叉校验。
+
+            ## 四、资产评估报告审核
+            逐项写出识别结果；无法确认的地方标“需人工复核”。
+
+            ## 五、法律意见书审核
+            若缺失，明确写缺失及影响。
+
+            ## 六、交叉一致性校验
+            用表格列出字段、各文档取值、一致性结论。
+
+            ## 七、综合审核结论
+            - 先给“审核维度”汇总表。
+            - 再给“最终结论”。
+            - 再给“必须整改项”。
+            - 最后给“建议修正项”。
+
+            额外规则：
+            - “必须整改项”只放会影响通过与否的事项。
+            - “建议修正项”只放文字规范、格式细节、待人工补证等非核心问题。
+            - 如果没有发现某类问题，明确写“未发现明显问题”。
+        - id: donate-review-user
+          role: user
+          text: '{{#review_package.output#}}'
+        selected: false
+        title: 生成审核报告
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 98
+      id: review_llm
+      position:
+        x: 1020
+        y: 238
+      positionAbsolute:
+        x: 1020
+        y: 238
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - review_llm
+          - text
+          variable: audit_report
+        selected: false
+        title: 输出审核报告
+        type: end
+      height: 90
+      id: review_output
+      position:
+        x: 1340
+        y: 242
+      positionAbsolute:
+        x: 1340
+        y: 242
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    viewport:
+      x: 74
+      y: 95
+      zoom: 0.61

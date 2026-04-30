@@ -1,0 +1,1085 @@
+app:
+  description: 采购用款审批AI审核工作流。对三份必备资料进行合规性审核：设备购置计划表、项目需求书、调研报告。自动检查填写规范并生成审核报告。
+  icon: 📋
+  icon_background: '#D9F3E9'
+  icon_type: emoji
+  mode: workflow
+  name: purchase_approval_review
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/deepseek:0.0.12@37699cc3d1ea9e006348a7273a514f3ddf60ffb0649dc735c594c8da6a80934b
+    version: null
+- current_identifier: null
+  type: package
+  value:
+    plugin_unique_identifier: bowenliang123/md_exporter:3.6.9@3f027d63e80b44d5d5a9f706871afaef37905b8f8a89a2d152dc530211a8acb1
+    version: null
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      - .docx
+      - .pdf
+      - .xls
+      - .xlsx
+      - .html
+      - .htm
+      allowed_file_types:
+      - image
+      - document
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        attachment_image_file_size_limit: 2
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        file_upload_limit: 50
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: '# 采购用款审批AI审核助手
+
+
+      您好！我是采购用款审批AI审核助手。
+
+
+      请上传以下三份文档进行审核：
+
+      1. **设备购置计划表**
+
+      2. **项目需求书**
+
+      3. **调研报告**
+
+
+      请尽量上传 **PDF / DOCX / HTML / HTM** 格式文件。
+
+      如文档为扫描件、页码缺失、盖章不清或存在人工补充说明，请在“补充说明”中注明。
+
+
+      请填写您的**项目名称**和**预算金额**，审核完成后将自动生成审核报告。
+
+      '
+    retriever_resource:
+      enabled: false
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        sourceType: start
+        targetType: document-extractor
+      id: start_node-source-device_plan_extractor-target
+      source: start_node
+      sourceHandle: source
+      target: device_plan_extractor
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: start
+        targetType: document-extractor
+      id: start_node-source-project_req_extractor-target
+      source: start_node
+      sourceHandle: source
+      target: project_req_extractor
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: start
+        targetType: document-extractor
+      id: start_node-source-research_report_extractor-target
+      source: start_node
+      sourceHandle: source
+      target: research_report_extractor
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: document-extractor
+        targetType: llm
+      id: device_plan_extractor-source-device_plan_summary-target
+      source: device_plan_extractor
+      sourceHandle: source
+      target: device_plan_summary
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: document-extractor
+        targetType: llm
+      id: project_req_extractor-source-project_req_summary-target
+      source: project_req_extractor
+      sourceHandle: source
+      target: project_req_summary
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: document-extractor
+        targetType: llm
+      id: research_report_extractor-source-research_report_summary-target
+      source: research_report_extractor
+      sourceHandle: source
+      target: research_report_summary
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: llm
+      id: device_plan_summary-source-review_summary-target
+      source: device_plan_summary
+      sourceHandle: source
+      target: review_summary
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: llm
+      id: project_req_summary-source-review_summary-target
+      source: project_req_summary
+      sourceHandle: source
+      target: review_summary
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: llm
+      id: research_report_summary-source-review_summary-target
+      source: research_report_summary
+      sourceHandle: source
+      target: review_summary
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: template-transform
+      id: review_summary-source-review_package-target
+      source: review_summary
+      sourceHandle: source
+      target: review_package
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: template-transform
+        targetType: llm
+      id: review_package-source-final_review_llm-target
+      source: review_package
+      sourceHandle: source
+      target: final_review_llm
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: template-transform
+      id: final_review_llm-source-export_filename_builder-target
+      source: final_review_llm
+      sourceHandle: source
+      target: export_filename_builder
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: template-transform
+        targetType: tool
+      id: export_filename_builder-source-markdown_exporter-target
+      source: export_filename_builder
+      sourceHandle: source
+      target: markdown_exporter
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: tool
+        targetType: end
+      id: markdown_exporter-source-review_output-target
+      source: markdown_exporter
+      sourceHandle: source
+      target: review_output
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: ''
+        selected: true
+        title: 开始
+        type: start
+        variables:
+        - label: 项目名称（可选）
+          max_length: 200
+          options: []
+          required: false
+          type: text-input
+          variable: project_name
+        - label: 预算金额（元）
+          max_length: 20
+          options: []
+          required: true
+          type: text-input
+          variable: budget_amount
+        - allowed_file_extensions:
+          - .html
+          - .htm
+          - .pdf
+          - .docx
+          allowed_file_types:
+          - document
+          allowed_file_upload_methods:
+          - local_file
+          - remote_url
+          label: 项目需求书文件
+          max_length: 48
+          options: []
+          required: true
+          type: file
+          variable: project_req_file
+        - allowed_file_extensions:
+          - .html
+          - .htm
+          - .pdf
+          - .docx
+          allowed_file_types:
+          - document
+          allowed_file_upload_methods:
+          - local_file
+          - remote_url
+          label: 调研报告文件
+          max_length: 48
+          options: []
+          required: true
+          type: file
+          variable: research_report_file
+        - allowed_file_extensions:
+          - .html
+          - .htm
+          - .pdf
+          - .docx
+          allowed_file_types:
+          - document
+          allowed_file_upload_methods:
+          - local_file
+          - remote_url
+          label: 设备购置计划表文件
+          max_length: 48
+          options: []
+          required: true
+          type: file
+          variable: device_plan_file
+        - label: 补充说明（填写不规范、人工备注等）
+          max_length: 2000
+          options: []
+          required: false
+          type: paragraph
+          variable: reviewer_notes
+      height: 239
+      id: start_node
+      position:
+        x: -2.857142857142833
+        y: 116
+      positionAbsolute:
+        x: -2.857142857142833
+        y: 116
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        is_array_file: false
+        selected: false
+        title: 提取设备购置计划表
+        type: document-extractor
+        variable_selector:
+        - start_node
+        - device_plan_file
+      height: 104
+      id: device_plan_extractor
+      position:
+        x: 362
+        y: 0
+      positionAbsolute:
+        x: 362
+        y: 0
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        is_array_file: false
+        selected: false
+        title: 提取项目需求书
+        type: document-extractor
+        variable_selector:
+        - start_node
+        - project_req_file
+      height: 104
+      id: project_req_extractor
+      position:
+        x: 362
+        y: 184
+      positionAbsolute:
+        x: 362
+        y: 184
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        is_array_file: false
+        selected: false
+        title: 提取调研报告
+        type: document-extractor
+        variable_selector:
+        - start_node
+        - research_report_file
+      height: 104
+      id: research_report_extractor
+      position:
+        x: 362
+        y: 368
+      positionAbsolute:
+        x: 362
+        y: 368
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            max_tokens: 1000
+            temperature: 0.1
+            top_p: 1
+          mode: chat
+          name: deepseek-coder
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - id: device-plan-summary-system
+          role: system
+          text: '你是政府采购合规审核员。请分析以下设备购置计划表的填写内容，检查是否符合规范。
+
+
+            必须检查的项目：
+
+            1. 编号：是否根据体系要求编写？
+
+            2. 规格及型号：是否指定了品牌？（违规：不可指定品牌）
+
+            3. 技术要求：是否填写详细？（未填写或过于简略为违规）
+
+            4. 参考供应商：是否为空？（填写反而违规）
+
+            5. 供货时限要求：是否正确处理（可不填）
+
+
+            输出要求：
+
+            1. 使用中文，控制在 500 字以内。
+
+            2. 不要输出 JSON，不要输出代码块。
+
+            3. 对无法确认的内容明确写“需人工复核”。
+
+            4. 严格按以下结构输出：
+
+
+            【单项结论】
+
+            合格 / 不合格 / 需人工复核
+
+
+            【发现的问题】
+
+            - 问题1
+
+            - 问题2
+
+            若无明显问题，写“未发现明显问题”。
+
+
+            【整改建议】
+
+            - 建议1
+
+            - 建议2'
+        - id: device-plan-summary-user
+          role: user
+          text: '{{#device_plan_extractor.text#}}'
+        selected: false
+        title: 审核设备购置计划表
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 88
+      id: device_plan_summary
+      position:
+        x: 704
+        y: 8
+      positionAbsolute:
+        x: 704
+        y: 8
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            max_tokens: 1000
+            temperature: 0.1
+            top_p: 1
+          mode: chat
+          name: deepseek-coder
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - id: project-req-summary-system
+          role: system
+          text: '你是政府采购合规审核员。请分析以下项目需求书的填写内容，检查是否符合规范。
+
+
+            必须检查的项目：
+
+            1. 项目名称：是否与其他采购材料保持一致？
+
+            2. 项目概况总述：是否标注了“采购方式”和项目类型（货物类/服务类/工程类）？
+
+            3. 50万及以上项目：是否标注了中小企业扶持政策响应情况？
+
+            4. 实质性技术要求（★标记）：是否正确标注在需求条款栏？
+
+            5. 核心产品（▲标记）：是否正确标注在内容名称栏？
+
+
+            输出要求：
+
+            1. 使用中文，控制在 600 字以内。
+
+            2. 不要输出 JSON，不要输出代码块。
+
+            3. 对无法确认的内容明确写“需人工复核”。
+
+            4. 严格按以下结构输出：
+
+
+            【单项结论】
+
+            合格 / 不合格 / 需人工复核
+
+
+            【发现的问题】
+
+            - 问题1
+
+            - 问题2
+
+            若无明显问题，写“未发现明显问题”。
+
+
+            【整改建议】
+
+            - 建议1
+
+            - 建议2'
+        - id: project-req-summary-user
+          role: user
+          text: '{{#project_req_extractor.text#}}'
+        selected: false
+        title: 审核项目需求书
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 88
+      id: project_req_summary
+      position:
+        x: 704
+        y: 192
+      positionAbsolute:
+        x: 704
+        y: 192
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            max_tokens: 1000
+            temperature: 0.1
+            top_p: 1
+          mode: chat
+          name: deepseek-coder
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - id: research-report-summary-system
+          role: system
+          text: "你是政府采购合规审核员。请分析以下采购项目调研报告的填写内容，检查是否符合规范。\n\n必须检查的项目：\n1. 报告标题：采购项目名称是否与其他材料保持一致？\n\
+            2. 项目概述：是否标注了预算金额和预算来源？\n3. 报价调研：报价区间是否合理？有无明细组成？\n4. 调研结论：是否包含以下三点：\n\
+            \   - 预算设置是否合理\n   - 需求条款是否满足供货/服务标准\n   - 50万及以上项目是否响应中小企业扶持政策\n5. 三方签字：项目负责人、预算管理员、部门负责人是否全部签字？（缺失任何一方即为不合格）\n\
+            \n输出要求：\n1. 使用中文，控制在 700 字以内。\n2. 不要输出 JSON，不要输出代码块。\n3. 对无法确认的内容明确写“需人工复核”。\n\
+            4. 严格按以下结构输出：\n\n【单项结论】\n合格 / 不合格 / 需人工复核\n\n【发现的问题】\n- 问题1\n- 问题2\n若无明显问题，写“未发现明显问题”。\n\
+            \n【整改建议】\n- 建议1\n- 建议2"
+        - id: research-report-summary-user
+          role: user
+          text: '{{#research_report_extractor.text#}}'
+        selected: false
+        title: 审核调研报告
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 88
+      id: research_report_summary
+      position:
+        x: 704
+        y: 376
+      positionAbsolute:
+        x: 704
+        y: 376
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            max_tokens: 800
+            temperature: 0.1
+            top_p: 1
+          mode: chat
+          name: deepseek-coder
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - id: review-summary-system
+          role: system
+          text: '你是政府采购审批主管。请汇总以下三份文档的审核结果，给出简洁的汇总意见。
+
+
+            设备购置计划表审核结果：
+
+            {{device_plan_summary}}
+
+
+            项目需求书审核结果：
+
+            {{project_req_summary}}
+
+
+            调研报告审核结果：
+
+            {{research_report_summary}}
+
+
+            项目预算金额：{{budget_amount}} 元
+
+
+            输出要求：
+
+            1. 使用中文，控制在 400 字以内。
+
+            2. 明确保留上游结果中的“不合格”与“需人工复核”表述，不得弱化。
+
+            3. 若任一文档存在明显不合格项，要直接指出。
+
+            4. 不要重复大段原文。
+
+            5. 严格按以下格式输出：
+
+
+            【汇总审核结论】
+
+            （简要评价）
+
+
+            【需要重点关注的问题】
+
+            - 问题1
+
+            - 问题2
+
+            若无，写“未发现需要额外强调的问题”。'
+        - id: review-summary-user
+          role: user
+          text: '设备购置计划表：{{#device_plan_summary.text#}}
+
+
+            项目需求书：{{#project_req_summary.text#}}
+
+
+            调研报告：{{#research_report_summary.text#}}'
+        selected: false
+        title: 汇总审核结果
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 88
+      id: review_summary
+      position:
+        x: 1066
+        y: 192
+      positionAbsolute:
+        x: 1066
+        y: 192
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        selected: false
+        template: '审核任务：采购用款审批AI审核
+
+
+          【基本信息】
+
+          项目名称：{% if project_name %}{{ project_name }}{% else %}未填写{% endif %}
+
+          预算金额：{{ budget_amount }} 元
+
+          补充说明：{% if reviewer_notes %}{{ reviewer_notes }}{% else %}无{% endif %}
+
+
+          {% if budget_amount|int >= 500000 %}
+
+          【重要提示】
+
+          本项目预算金额 ≥ 500,000 元（50万），需要特别关注中小企业扶持政策响应。
+
+          {% endif %}
+
+
+          【设备购置计划表审核结果】
+
+          {{ device_plan_summary }}
+
+
+          【项目需求书审核结果】
+
+          {{ project_req_summary }}
+
+
+          【调研报告审核结果】
+
+          {{ research_report_summary }}'
+        title: 组装审核资料
+        type: template-transform
+        variables:
+        - value_selector:
+          - start_node
+          - project_name
+          variable: project_name
+        - value_selector:
+          - start_node
+          - budget_amount
+          variable: budget_amount
+        - value_selector:
+          - device_plan_summary
+          - text
+          variable: device_plan_summary
+        - value_selector:
+          - project_req_summary
+          - text
+          variable: project_req_summary
+        - value_selector:
+          - research_report_summary
+          - text
+          variable: research_report_summary
+        - value_selector:
+          - start_node
+          - reviewer_notes
+          variable: reviewer_notes
+      height: 52
+      id: review_package
+      position:
+        x: 1066
+        y: 376
+      positionAbsolute:
+        x: 1066
+        y: 376
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            max_tokens: 2000
+            temperature: 0.2
+            top_p: 1
+          mode: chat
+          name: deepseek-coder
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - id: final-review-system
+          role: system
+          text: '你是政府采购审批助手，负责生成正式的采购用款审批审核报告。
+
+
+            工作原则：
+
+            1. 只能根据输入摘要作答，不得补造事实。
+
+            2. 若摘要中写明"需人工复核"，最终报告必须保留这一结论。
+
+            3. 文风要简洁、审慎、偏书面、公文式。
+
+            4. 综合审查，不要重复大段摘要原文。
+
+
+            审核要点：
+
+            【设备购置计划表】
+
+            - 检查规格及型号是否指定品牌（违规）
+
+            - 检查技术要求是否详细填写
+
+            - 检查参考供应商是否为空（填写反而违规）
+
+
+            【项目需求书】
+
+            - 50万及以上项目必须标注中小企业扶持政策响应情况
+
+            - 检查★实质性技术要求和▲核心产品标注
+
+
+            【调研报告】
+
+            - 三方签字（项目负责人+预算管理员+部门负责人）必须完整
+
+            - 50万及以上项目必须响应中小企业扶持政策
+
+
+            最终审批判断规则：
+
+            - 三份文档全部合格 → 建议：通过
+
+            - 任何一份不合格 → 建议：退回整改
+
+
+            输出格式要求：
+
+            - 必须输出为 Markdown
+
+            - 尽量使用表格展示关键信息
+
+            - 使用 ✅ / ⚠️ / ❌ 表示状态
+
+            - 严格按以下结构输出：
+
+
+            # 采购用款审批审核报告
+
+
+            **审核日期**：本次审核
+
+            **项目名称**：
+
+            **预算金额**：
+
+
+            ---
+
+
+            ## 一、设备购置计划表审核
+
+
+            | 检查项 | 状态 | 说明 |
+
+            |--------|------|------|
+
+            | 编号规范性 | | |
+
+            | 品牌指定情况 | | |
+
+            | 技术要求详细程度 | | |
+
+            | 参考供应商填写 | | |
+
+
+            **结论**：
+
+
+            ## 二、项目需求书审核
+
+
+            | 检查项 | 状态 | 说明 |
+
+            |--------|------|------|
+
+            | 项目名称一致性 | | |
+
+            | 采购方式标注 | | |
+
+            | 中小企业政策响应（≥50万） | | |
+
+            | ★实质性技术要求标注 | | |
+
+            | ▲核心产品标注 | | |
+
+
+            **结论**：
+
+
+            ## 三、调研报告审核
+
+
+            | 检查项 | 状态 | 说明 |
+
+            |--------|------|------|
+
+            | 项目名称一致性 | | |
+
+            | 预算金额标注 | | |
+
+            | 报价合理性 | | |
+
+            | 三方签字完整性 | | |
+
+            | 中小企业政策响应（≥50万） | | |
+
+
+            **结论**：
+
+
+            ---
+
+
+            ## 四、汇总审核结论
+
+
+            | 审核维度 | 结果 |
+
+            |----------|------|
+
+            | 设备购置计划表 | |
+
+            | 项目需求书 | |
+
+            | 调研报告 | |
+
+
+            ### 最终建议
+
+            **✅ 通过** 或 **❌ 退回整改**
+
+
+            ### 必须整改项
+
+            （如有）
+
+
+            ### 建议修正项
+
+            （如有）'
+        - id: final-review-user
+          role: user
+          text: '{{#review_package.output#}}'
+        selected: false
+        title: 生成最终审核报告
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 88
+      id: final_review_llm
+      position:
+        x: 1066
+        y: 507.7142857142857
+      positionAbsolute:
+        x: 1066
+        y: 507.7142857142857
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        selected: false
+        template: '{% if project_name %}{{ project_name }}-采购用款审批审核报告{% else %}采购用款审批审核报告{% endif
+          %}'
+        title: 生成导出文件名
+        type: template-transform
+        variables:
+        - value_selector:
+          - start_node
+          - project_name
+          variable: project_name
+      height: 51
+      id: export_filename_builder
+      position:
+        x: 1360
+        y: 507.7142857142857
+      positionAbsolute:
+        x: 1360
+        y: 507.7142857142857
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        params:
+          md_content: ''
+          output_filename: ''
+        provider_id: bowenliang123/md_exporter/md_exporter
+        provider_name: bowenliang123/md_exporter/md_exporter
+        provider_type: builtin
+        selected: false
+        title: 导出Markdown文件
+        tool_configurations: {}
+        tool_label: Markdown To Markdown
+        tool_name: md_to_md
+        tool_node_version: '2'
+        tool_parameters:
+          md_content:
+            type: variable
+            value:
+            - final_review_llm
+            - text
+          md_text:
+            type: mixed
+            value: '{{#final_review_llm.text#}}'
+          output_filename:
+            type: variable
+            value:
+            - export_filename_builder
+            - output
+        type: tool
+      height: 51
+      id: markdown_exporter
+      position:
+        x: 1660
+        y: 507.7142857142857
+      positionAbsolute:
+        x: 1660
+        y: 507.7142857142857
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - final_review_llm
+          - text
+          variable: audit_report
+        - value_selector:
+          - markdown_exporter
+          - files
+          variable: audit_report_md_file
+        selected: false
+        title: 输出审核报告
+        type: end
+      height: 88
+      id: review_output
+      position:
+        x: 1960
+        y: 507.7142857142857
+      positionAbsolute:
+        x: 1960
+        y: 507.7142857142857
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    viewport:
+      x: 209
+      y: 158
+      zoom: 0.7
+  rag_pipeline_variables: []
