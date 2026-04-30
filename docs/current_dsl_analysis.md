@@ -138,7 +138,7 @@
 ### Start 输入
 
 - `project_name`：项目名称，可选。
-- `budget_amount`：预算金额，必填，当前为短文本。
+- `budget_amount`：预算金额，单位为万元，必填，当前为短文本。
 - `project_req_file`：项目需求书文件，必填。
 - `research_report_file`：调研报告文件，必填。
 - `device_plan_file`：设备购置计划表文件，必填。
@@ -161,7 +161,7 @@
 - 3 个 `document-extractor`：分别抽取三份上传文件文本。
 - 3 个材料审核 LLM：分别审核设备购置计划表、项目需求书、调研报告，模型为 `deepseek-coder`。
 - `review_summary`：汇总三份材料审核结果。
-- `review_package`：模板转换，组装项目名称、预算金额、补充说明、三份材料审核摘要；其中包含预算金额大于等于 500000 的重要提示逻辑。
+- `review_package`：模板转换，组装项目名称、预算金额（万元）、补充说明、三份材料审核摘要；其中包含预算金额大于等于 50 万元的重要提示逻辑。
 - `final_review_llm`：生成最终审核报告。
 - `export_filename_builder`：根据项目名称生成 Markdown 导出文件名；未填写项目名称时使用默认文件名。
 - `markdown_exporter`：Markdown Exporter 工具，把 `final_review_llm.text` 导出为 Markdown 文件。
@@ -170,7 +170,7 @@
 ### 当前特点
 
 - 使用并行分支处理三份材料，效率比串行抽取/审核更好。
-- 预算金额字段是 `text-input`，模板里使用 `budget_amount|int` 做阈值判断；如果输入非纯数字，可能影响预算判断，需要后续考虑改为 Number 或加格式校验。
+- 预算金额字段是 `text-input`，单位为万元，模板里使用 `budget_amount|float >= 50` 做阈值判断；如果输入非数字，可能影响预算判断，需要后续考虑改为 Number 或加格式校验。
 - 文件上传提示推荐 PDF / DOCX / HTML / HTM；Start 节点文件字段允许 `.html/.htm/.doc/.docx/.pdf`。
 - 审核报告会同时以文本和 Markdown 文件形式输出，便于下载、归档或接口集成。
 
